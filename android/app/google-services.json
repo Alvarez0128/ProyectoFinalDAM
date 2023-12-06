@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "760676185361",
+    "project_id": "dam-proyectofinal-4344c",
+    "storage_bucket": "dam-proyectofinal-4344c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:760676185361:android:ef4d83c85fd6531f20c8b0",
+        "android_client_info": {
+          "package_name": "mx.edu.ittepic.dam_proyectofinal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZKTaOpmWAV816Rj7-zqNnJLqb-0TVABo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
