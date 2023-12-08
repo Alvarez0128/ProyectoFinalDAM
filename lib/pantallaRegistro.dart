@@ -1,4 +1,6 @@
-import 'package:dam_proyectofinal/principal.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'principal.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -11,9 +13,12 @@ class pantallaRegistro extends StatefulWidget {
 
 class _pantallaRegistroState extends State<pantallaRegistro> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _correoController = TextEditingController();
+  final TextEditingController _nombreController = TextEditingController();
+  final TextEditingController _apellidoController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   bool _isPasswordVisible = false;
 
   void _togglePasswordVisibility() {
@@ -25,21 +30,33 @@ class _pantallaRegistroState extends State<pantallaRegistro> {
   Future<void> _handleRegistration() async {
     if (_formKey.currentState?.validate() ?? false) {
       try {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _usernameController.text,
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _correoController.text,
           password: _passwordController.text,
         );
+
+        // Guardar información adicional en Firestore
+        await FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(userCredential.user!.uid) //de esta manera toma el ID quese generó al crear el usuario con el correo de arriba
+            .set({
+          'nombre': _nombreController.text,
+          'apellido': _apellidoController.text,
+          'correo': _correoController.text
+        });
 
         // Registro exitoso
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Registro exitoso", style: TextStyle(color: Colors.green)),
+            content:
+                const Text("Registro exitoso", style: TextStyle(color: Colors.green)),
             backgroundColor: Colors.white,
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
-              side: BorderSide(color: Colors.green),
+              side: const BorderSide(color: Colors.green),
             ),
           ),
         );
@@ -53,13 +70,13 @@ class _pantallaRegistroState extends State<pantallaRegistro> {
         // Manejo de errores durante el registro
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Error $e", style: TextStyle(color: Colors.red)),
+            content: Text("Error $e", style: const TextStyle(color: Colors.red)),
             backgroundColor: Colors.white,
-            duration: Duration(seconds: 4),
+            duration: const Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
-              side: BorderSide(color: Colors.red),
+              side: const BorderSide(color: Colors.red),
             ),
           ),
         );
@@ -71,101 +88,140 @@ class _pantallaRegistroState extends State<pantallaRegistro> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Deja el AppBar vacío
-      ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(50, 0, 50, 0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Registrarse',
-                style: TextStyle(
-                  fontSize: 30.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 60.0),
-              TextFormField(
-                controller: _usernameController,
-                decoration: InputDecoration(
-                  labelText: 'Correo',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
+          // Deja el AppBar vacío
+          ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(50, 50, 50, 30),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Registrarse',
+                  style: TextStyle(
+                    fontSize: 30.0,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Por favor, ingrese su correo';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16.0),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: !_isPasswordVisible,
-                decoration: InputDecoration(
-                  labelText: 'Contraseña',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                const SizedBox(height: 20.0),
+                TextFormField(
+                  controller: _nombreController,
+                  decoration: InputDecoration(
+                    labelText: 'Nombre',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
                     ),
-                    onPressed: _togglePasswordVisibility,
                   ),
+                  validator: (value) {
+                    if (value?.isEmpty ?? true) {
+                      return 'Por favor, ingrese su nombre';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Por favor, ingrese su contraseña';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16.0),
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: !_isPasswordVisible,
-                decoration: InputDecoration(
-                  labelText: 'Repetir Contraseña',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                const SizedBox(height: 16.0),
+                TextFormField(
+                  controller: _apellidoController,
+                  decoration: InputDecoration(
+                    labelText: 'Apellido',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
                     ),
-                    onPressed: _togglePasswordVisibility,
                   ),
+                  validator: (value) {
+                    if (value?.isEmpty ?? true) {
+                      return 'Por favor, ingrese su apellido';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Por favor, ingrese su contraseña';
-                  }
-                  if (value != _passwordController.text) {
-                    return 'Las contraseñas no coinciden';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: _handleRegistration,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 12.0),
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
+                const SizedBox(height: 16.0),
+                TextFormField(
+                  controller: _correoController,
+                  decoration: InputDecoration(
+                    labelText: 'Correo',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
                   ),
+                  validator: (value) {
+                    if (value?.isEmpty ?? true) {
+                      return 'Por favor, ingrese su correo';
+                    }
+                    return null;
+                  },
                 ),
-                child: const Text('Registrarse'),
-              ),
-            ],
+                const SizedBox(height: 16.0),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: !_isPasswordVisible,
+                  decoration: InputDecoration(
+                    labelText: 'Contraseña',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: _togglePasswordVisibility,
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value?.isEmpty ?? true) {
+                      return 'Por favor, ingrese su contraseña';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: !_isPasswordVisible,
+                  decoration: InputDecoration(
+                    labelText: 'Repetir Contraseña',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: _togglePasswordVisibility,
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value?.isEmpty ?? true) {
+                      return 'Por favor, ingrese su contraseña';
+                    }
+                    if (value != _passwordController.text) {
+                      return 'Las contraseñas no coinciden';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16.0),
+                ElevatedButton(
+                  onPressed: _handleRegistration,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50.0, vertical: 12.0),
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                  ),
+                  child: const Text('Registrarse'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

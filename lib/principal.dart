@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dam_proyectofinal/inicio.dart';
 import 'package:dam_proyectofinal/pantallaRegistro.dart';
 import 'package:flutter/material.dart';
@@ -33,11 +34,24 @@ class _AppFinalState extends State<AppFinal> {
           password: _passwordController.text,
         );
 
-        // Navegar a la pantalla de inicio
-        Navigator.push(
+        // Consulta Firestore para obtener nombre y apellido
+        DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+            .collection('usuarios')
+            .where('correo', isEqualTo: _usernameController.text)
+            .get()
+            .then((querySnapshot) => querySnapshot.docs.first);
+
+        String nombre = userSnapshot['nombre'];
+        //String apellido = userSnapshot['apellido'];
+
+        // Navegar a la pantalla de inicio y forzar la reconstrucción
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const PantallaInicio()),
+          MaterialPageRoute(
+            builder: (context) => PantallaInicio(nombreUsuario: '$nombre'),
+          ),
         );
+
         print('Inicio de sesión exitoso');
         limpiarCampos();
       } catch (e) {
