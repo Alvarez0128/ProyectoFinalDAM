@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:dam_proyectofinal/pantallaCrearEvento.dart';
-import 'package:dam_proyectofinal/pantallaMisEventos.dart';
+import 'pantallaCrearEvento.dart';
+import 'pantallaMisEventos.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
