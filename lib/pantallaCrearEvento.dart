@@ -1,16 +1,31 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CreateEventScreen extends StatefulWidget {
+
   @override
   _CreateEventScreenState createState() => _CreateEventScreenState();
 }
 
 class _CreateEventScreenState extends State<CreateEventScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   final TextEditingController _descriptionController = TextEditingController();
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now();
   String _selectedEventType = 'Viaje';
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  late User _user;
+
+  @override
+  void initState() {
+    super.initState();
+    _user = _auth.currentUser!;
+
+  }
 
   Future<void> _selectStartDate(BuildContext context) async {
     final DateTime picked = (await showDatePicker(
@@ -19,7 +34,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     ))!;
-    if (picked != null && picked != _startDate) {
+    if (picked != _startDate) {
       setState(() {
         _startDate = picked;
       });
@@ -33,7 +48,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     ))!;
-    if (picked != null && picked != _endDate) {
+    if (picked != _endDate) {
       setState(() {
         _endDate = picked;
       });
@@ -44,14 +59,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     String? selectedType = await showModalBottomSheet(
       context: context,
       builder: (BuildContext builder) {
-        return Container(
-          height: 200.0,
+        return SizedBox(
+          height: 300.0,
           child: ListView(
             children: [
               _buildEventTypeItem('Viaje'),
               _buildEventTypeItem('Cumpleaños'),
               _buildEventTypeItem('Boda'),
               _buildEventTypeItem('Quinceañera'),
+              _buildEventTypeItem('Bautizo'),
               _buildEventTypeItem('Aniversario'),
               _buildEventTypeItem('Posada'),
               _buildEventTypeItem('Baby Shower'),
@@ -80,8 +96,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Crear Evento',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -110,7 +127,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextFormField(
                   onTap: () => _selectStartDate(context),
                   readOnly: true,
@@ -121,7 +138,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     ),
                   ),
                   validator: (value) {
-                    if (_startDate.isBefore(DateTime.now().subtract(Duration(days: 1)))) {
+                    if (_startDate.isBefore(DateTime.now().subtract(const Duration(days: 1)))) {
                       return 'Seleccione una fecha válida';
                     }
                     return null;
@@ -130,7 +147,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     text: '${_startDate.day}-${_startDate.month}-${_startDate.year}',
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextFormField(
                   onTap: () => _selectEventType(context),
                   readOnly: true,
@@ -148,7 +165,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   },
                   controller: TextEditingController(text: _selectedEventType),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextFormField(
                   onTap: () => _selectEndDate(context),
                   readOnly: true,
@@ -168,16 +185,66 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     text: '${_endDate.day}-${_endDate.month}-${_endDate.year}',
                   ),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      // La validación pasa, puedes continuar con la lógica para almacenar datos en Firestore
-                      // Aquí puedes utilizar Firestore para guardar la información del evento
-                      // Puedes utilizar los valores de _descriptionController.text, _startDate, _endDate, y _selectedEventType
+                      try{
+                        // ID del usuario actual
+                        String userId = _user.uid; // Debes reemplazar esto con la lógica para obtener el ID del usuario actual
+
+                        // Crea un nuevo evento
+                        Map<String, dynamic> nuevoEvento = {
+                          'descripcion': _descriptionController.text,
+                          'fechaInicio': _startDate,
+                          'tipoEvento': _selectedEventType,
+                          'fechaFinal': _endDate,
+                        };
+
+                        // Agrega el nuevo evento como subdocumento en la colección de eventos del usuario
+                        await _firestore.collection('usuarios').doc(userId).update({
+                          'eventos': FieldValue.arrayUnion([nuevoEvento]),
+                        });
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text("Evento creado correctamente", style: TextStyle(color: Colors.green)),
+                            backgroundColor: Colors.white,
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              side: const BorderSide(color: Colors.green),
+                            ),
+                          ),
+                        );
+                        limpiarCampos();
+                      }catch(e){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text("Ocurrió un error", style: TextStyle(color: Colors.red)),
+                              backgroundColor: Colors.white,
+                              duration: const Duration(seconds: 3),
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                side: const BorderSide(color: Colors.red),
+                              ),
+                            ),
+                        );
+                      }
+                      // También puedes agregar la lógica para navegar a la pantalla de eventos, etc.
                     }
                   },
-                  child: Text('Crear Evento'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 12.0),
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                  ),
+                  child: const Text('Crear Evento'),
                 ),
               ],
             ),
@@ -186,5 +253,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       ),
     );
   }
-
+  void limpiarCampos() {
+    setState(() {
+      _descriptionController.clear();
+      _startDate = DateTime.now();
+      _endDate = DateTime.now();
+      _selectedEventType = 'Viaje';
+    });
+  }
 }

@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dam_proyectofinal/inicio.dart';
+import 'package:dam_proyectofinal/pantallaInicio.dart';
 import 'package:dam_proyectofinal/pantallaRegistro.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -44,6 +44,20 @@ class _AppFinalState extends State<AppFinal> {
         String nombre = userSnapshot['nombre'];
         //String apellido = userSnapshot['apellido'];
 
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Center(child: Text('Bienvenid@, $nombre', style: const TextStyle(color: Colors.blue,fontSize: 18)),),
+            backgroundColor: Colors.white,
+            margin: const EdgeInsets.fromLTRB(10, 0, 10, 40),
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+              //side: const BorderSide(color: Colors.blueAccent),
+            ),
+          ),
+        );
+
         // Navegar a la pantalla de inicio y forzar la reconstrucción
         Navigator.pushReplacement(
           context,
@@ -68,13 +82,13 @@ class _AppFinalState extends State<AppFinal> {
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(errorMessage, style: TextStyle(color: Colors.red)),
+            content: Text(errorMessage, style: const TextStyle(color: Colors.red)),
             backgroundColor: Colors.white,
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
-              side: BorderSide(color: Colors.red),
+              side: const BorderSide(color: Colors.red),
             ),
           ),
         );
