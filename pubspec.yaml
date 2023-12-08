@@ -40,6 +40,7 @@ dependencies:
   firebase_storage: ^11.5.4
   file_picker: ^6.1.1
   cloud_firestore: ^4.13.4
+  clipboard: ^0.1.2
 
 dev_dependencies:
   flutter_test:

@@ -17,6 +17,8 @@ class _AppFinalState extends State<AppFinal> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  FocusNode _focusNode1 = FocusNode();
+  FocusNode _focusNode2 = FocusNode();
 
   @override
   void initState() {
@@ -132,6 +134,7 @@ class _AppFinalState extends State<AppFinal> {
                   ),
                   const SizedBox(height: 60.0),
                   TextFormField(
+                    focusNode: _focusNode1,
                     controller: _usernameController,
                     decoration: InputDecoration(
                       labelText: 'Correo',
@@ -148,6 +151,7 @@ class _AppFinalState extends State<AppFinal> {
                   ),
                   const SizedBox(height: 16.0),
                   TextFormField(
+                    focusNode: _focusNode2,
                     controller: _passwordController,
                     obscureText: !_isPasswordVisible,
                     decoration: InputDecoration(
@@ -171,7 +175,7 @@ class _AppFinalState extends State<AppFinal> {
                   ),
                   const SizedBox(height: 16.0),
                   ElevatedButton(
-                    onPressed: _handleLogin,
+                    onPressed: (){_handleLogin();FocusScope.of(context).unfocus();},
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 12.0),
                       backgroundColor: Colors.blue,

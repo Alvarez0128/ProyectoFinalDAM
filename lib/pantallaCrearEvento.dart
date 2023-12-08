@@ -1,3 +1,4 @@
+import 'package:clipboard/clipboard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late User _user;
-
+  FocusNode _focusNode1 = FocusNode();
+  FocusNode _focusNode2 = FocusNode();
+  FocusNode _focusNode3 = FocusNode();
+  FocusNode _focusNode4 = FocusNode();
   @override
   void initState() {
     super.initState();
@@ -113,6 +117,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 TextFormField(
+                  focusNode: _focusNode1,
                   controller: _descriptionController,
                   decoration: InputDecoration(
                     labelText: 'Descripción',
@@ -129,6 +134,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
+                  focusNode: _focusNode2,
                   onTap: () => _selectStartDate(context),
                   readOnly: true,
                   decoration: InputDecoration(
@@ -149,6 +155,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
+                  focusNode: _focusNode3,
                   onTap: () => _selectEventType(context),
                   readOnly: true,
                   decoration: InputDecoration(
@@ -167,6 +174,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
+                  focusNode: _focusNode4,
                   onTap: () => _selectEndDate(context),
                   readOnly: true,
                   decoration: InputDecoration(
@@ -190,11 +198,16 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       try{
+                        FocusScope.of(context).unfocus();
                         // ID del usuario actual
                         String userId = _user.uid; // Debes reemplazar esto con la lógica para obtener el ID del usuario actual
 
+                        // Genera un nuevo ID único para el evento
+                        String eventId = _firestore.collection('usuarios').doc().id;
+
                         // Crea un nuevo evento
                         Map<String, dynamic> nuevoEvento = {
+                          'id': eventId,
                           'descripcion': _descriptionController.text,
                           'fechaInicio': _startDate,
                           'tipoEvento': _selectedEventType,
@@ -218,6 +231,39 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             ),
                           ),
                         );
+
+                        // Mostrar cuadro de diálogo para copiar el ID del evento
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Evento creado correctamente'),
+                              content: Column(
+                                children: [
+                                  const Text('ID del evento:'),
+                                  Text(eventId),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    FlutterClipboard.copy(eventId).then((value) {
+                                      Navigator.of(context).pop();
+                                    });
+                                  },
+                                  child: const Text('Copiar ID'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text('Cerrar'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+
                         limpiarCampos();
                       }catch(e){
                         ScaffoldMessenger.of(context).showSnackBar(

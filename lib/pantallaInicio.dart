@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:dam_proyectofinal/pantallaAgregarEvento.dart';
+
 import 'pantallaCrearEvento.dart';
 import 'pantallaMisEventos.dart';
 import 'package:file_picker/file_picker.dart';
@@ -193,6 +195,10 @@ class _PantallaInicioState extends State<PantallaInicio> {
       case 2:
         {
           return CreateEventScreen();
+        }
+      case 3:
+        {
+          return SearchEventScreen();
         }
       default:
         {
