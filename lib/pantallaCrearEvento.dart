@@ -200,7 +200,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       try{
                         FocusScope.of(context).unfocus();
                         // ID del usuario actual
-                        String userId = _user.uid; // Debes reemplazar esto con la lógica para obtener el ID del usuario actual
+                        String userId = _user.uid;
 
                         // Genera un nuevo ID único para el evento
                         String eventId = _firestore.collection('usuarios').doc().id;
@@ -219,19 +219,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           'eventos': FieldValue.arrayUnion([nuevoEvento]),
                         });
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text("Evento creado correctamente", style: TextStyle(color: Colors.green)),
-                            backgroundColor: Colors.white,
-                            duration: const Duration(seconds: 2),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              side: const BorderSide(color: Colors.green),
-                            ),
-                          ),
-                        );
-
                         // Mostrar cuadro de diálogo para copiar el ID del evento
                         showDialog(
                           context: context,
@@ -239,30 +226,30 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             return AlertDialog(
                               title: const Text('Evento creado correctamente'),
                               content: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min, // Ajusta la altura del AlertDialog
                                 children: [
                                   const Text('ID del evento:'),
-                                  Text(eventId),
+                                  Text(eventId, style: TextStyle(fontWeight: FontWeight.bold),),
                                 ],
                               ),
                               actions: [
                                 TextButton(
-                                  onPressed: () {
-                                    FlutterClipboard.copy(eventId).then((value) {
-                                      Navigator.of(context).pop();
-                                    });
-                                  },
+                                  onPressed: () => FlutterClipboard.copy(eventId).then((_) => Navigator.of(context).pop()),
                                   child: const Text('Copiar ID'),
                                 ),
                                 TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
+                                  onPressed: () => Navigator.of(context).pop(),
                                   child: const Text('Cerrar'),
                                 ),
                               ],
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                              titlePadding: const EdgeInsets.all(16),
                             );
                           },
                         );
+
+
 
                         limpiarCampos();
                       }catch(e){
