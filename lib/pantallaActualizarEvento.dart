@@ -1,19 +1,25 @@
 import 'package:clipboard/clipboard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dam_proyectofinal/pantallaDetalleMisEventos.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-class CreateEventScreen extends StatefulWidget {
+class UpdateEventScreen extends StatefulWidget {
+  final Map<String, dynamic>? event;
+
+  UpdateEventScreen({required this.event});
 
   @override
-  _CreateEventScreenState createState() => _CreateEventScreenState();
+  _UpdateEventScreenState createState() => _UpdateEventScreenState();
 }
 
-class _CreateEventScreenState extends State<CreateEventScreen> {
+class _UpdateEventScreenState extends State<UpdateEventScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _descriptionController =
+  TextEditingController();
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now();
   String _selectedEventType = 'Viaje';
@@ -21,15 +27,18 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late User _user;
-  FocusNode _focusNode1 = FocusNode();
-  FocusNode _focusNode2 = FocusNode();
-  FocusNode _focusNode3 = FocusNode();
-  FocusNode _focusNode4 = FocusNode();
+
   @override
   void initState() {
     super.initState();
     _user = _auth.currentUser!;
 
+    // Inicializar los campos con los valores actuales del evento
+    _descriptionController.text = widget.event?['descripcion'] ?? '';
+    _startDate = widget.event?['fechaInicio'].toDate() ?? DateTime.now();
+    _endDate = widget.event?['fechaFinal'].toDate() ?? DateTime.now();
+    _selectedEventType = widget.event?['tipoEvento'] ?? 'Viaje';
+    _subirFotosInvitados = widget.event?['subirFotosInvitados'] ?? false;
   }
 
   Future<void> _selectStartDate(BuildContext context) async {
@@ -100,12 +109,23 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+        onWillPop: () async {
+      // Navigator.pushReplacement para reemplazar la pantalla actual
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                MyEventsDetail(descripcion: widget.event?['descripcion'],idEvento: widget.event?['id'],usuario: _user.uid,)), // Reemplaza con la pantalla anterior
+      );
+
+      return false; // Devolver false para evitar el pop normal del AppBar
+    },
+    child: Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         title: const Text(
-          'Crear Evento',
+          'Actualizar Evento',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -119,7 +139,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 TextFormField(
-                  focusNode: _focusNode1,
                   controller: _descriptionController,
                   decoration: InputDecoration(
                     labelText: 'Descripción',
@@ -136,7 +155,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  focusNode: _focusNode2,
                   onTap: () => _selectStartDate(context),
                   readOnly: true,
                   decoration: InputDecoration(
@@ -152,12 +170,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     return null;
                   },
                   controller: TextEditingController(
-                    text: '${_startDate.day}-${_startDate.month}-${_startDate.year}',
+                    text: DateFormat('dd-MM-yyyy').format(_startDate),
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  focusNode: _focusNode3,
                   onTap: () => _selectEventType(context),
                   readOnly: true,
                   decoration: InputDecoration(
@@ -176,7 +193,6 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  focusNode: _focusNode4,
                   onTap: () => _selectEndDate(context),
                   readOnly: true,
                   decoration: InputDecoration(
@@ -192,7 +208,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     return null;
                   },
                   controller: TextEditingController(
-                    text: '${_endDate.day}-${_endDate.month}-${_endDate.year}',
+                    text: DateFormat('dd-MM-yyyy').format(_endDate),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -209,102 +225,122 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      try{
+                      try {
                         FocusScope.of(context).unfocus();
-                        // ID del usuario actual
-                        String userId = _user.uid;
 
-                        // Genera un nuevo ID único para el evento
-                        String eventId = _firestore.collection('usuarios').doc().id;
+                        // Actualizar el evento en la base de datos
+                        await _updateEventInDatabase();
 
-                        // Crea un nuevo evento
-                        Map<String, dynamic> nuevoEvento = {
-                          'id': eventId,
-                          'descripcion': _descriptionController.text,
-                          'fechaInicio': _startDate,
-                          'tipoEvento': _selectedEventType,
-                          'fechaFinal': _endDate,
-                          'subirFotosInvitados': _subirFotosInvitados,
-                        };
+                        // Mostrar mensaje de éxito
+                        _showUpdateSuccessSnackBar();
 
-                        // Agrega el nuevo evento como subdocumento en la colección de eventos del usuario
-                        await _firestore.collection('usuarios').doc(userId).update({
-                          'eventos': FieldValue.arrayUnion([nuevoEvento]),
-                        });
-
-                        // Mostrar cuadro de diálogo para copiar el ID del evento
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('Evento creado correctamente'),
-                              content: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min, // Ajusta la altura del AlertDialog
-                                children: [
-                                  const Text('ID del evento:'),
-                                  Text(eventId, style: TextStyle(fontWeight: FontWeight.bold),),
-                                ],
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => FlutterClipboard.copy(eventId).then((_) => Navigator.of(context).pop()),
-                                  child: const Text('Copiar ID'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('Cerrar'),
-                                ),
-                              ],
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                              titlePadding: const EdgeInsets.all(16),
-                            );
-                          },
-                        );
-
-
-
-                        limpiarCampos();
-                      }catch(e){
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text("Ocurrió un error", style: TextStyle(color: Colors.red)),
-                              backgroundColor: Colors.white,
-                              duration: const Duration(seconds: 3),
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                                side: const BorderSide(color: Colors.red),
-                              ),
+                        // Cerrar la pantalla de actualización
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MyEventsDetail(
+                              descripcion: _descriptionController.text,
+                              idEvento: widget.event?['id'],
+                              usuario: _user.uid,
                             ),
+                          ),
                         );
+                      } catch (e) {
+                        // Manejar errores
+                        print('Error al actualizar el evento: $e');
                       }
-                      // También puedes agregar la lógica para navegar a la pantalla de eventos, etc.
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 50.0, vertical: 12.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50.0, vertical: 12.0),
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15.0),
                     ),
                   ),
-                  child: const Text('Crear Evento'),
+                  child: const Text('Actualizar Evento'),
                 ),
               ],
             ),
           ),
         ),
       ),
-    );
+    ));
   }
-  void limpiarCampos() {
-    setState(() {
-      _descriptionController.clear();
-      _startDate = DateTime.now();
-      _endDate = DateTime.now();
-      _selectedEventType = 'Viaje';
+
+  Future<void> _updateEventInDatabase() async {
+    // Actualizar el evento en el arreglo de eventos del usuario actual
+    String userId = _user.uid;
+    String eventId = widget.event?['id'] ?? '';
+
+    Map<String, dynamic> updatedEvent = {
+      'id': eventId,
+      'descripcion': _descriptionController.text,
+      'tipoEvento': _selectedEventType,
+      'fechaInicio': _startDate,
+      'fechaFinal': _endDate,
+      'subirFotosInvitados': _subirFotosInvitados,
+    };
+
+    await _firestore.collection('usuarios').doc(userId).update({
+      'eventos': FieldValue.arrayRemove([widget.event]),
     });
+
+    await _firestore.collection('usuarios').doc(userId).update({
+      'eventos': FieldValue.arrayUnion([updatedEvent]),
+    });
+
+    // Actualizar el evento en el arreglo de invitaciones de otros usuarios
+    QuerySnapshot userSnapshot = await _firestore.collection('usuarios').get();
+
+    for (QueryDocumentSnapshot userDoc in userSnapshot.docs) {
+      String otherUserId = userDoc.id;
+
+      if (otherUserId != userId) {
+        // Verificar si el evento existe en el arreglo de invitaciones del usuario actual
+        List<dynamic>? invitations = userDoc['invitaciones'];
+        bool hasInvitation = invitations?.any((invitation) {
+          return invitation['id'] == eventId;
+        }) ?? false;
+
+        if (hasInvitation) {
+          // Obtener la invitación existente
+          Map<String, dynamic>? existingInvitation = invitations?.firstWhere(
+                (invitation) => invitation['id'] == eventId,
+            orElse: () => null,
+          );
+
+          // Crear objeto específico para otros usuarios
+          Map<String, dynamic> updatedInvitationForOthers = {
+            'id': eventId,
+            'descripcion': _descriptionController.text,
+            'tipoEvento': _selectedEventType,
+            'creadorNombre': existingInvitation?['creadorNombre'] ?? '',
+            'creadorApellido': existingInvitation?['creadorApellido'] ?? '',
+            'subirFotosInvitados': _subirFotosInvitados,
+          };
+
+          await _firestore.collection('usuarios').doc(otherUserId).update({
+            'invitaciones': invitations?.map((invitation) {
+              return (invitation['id'] == eventId)
+                  ? updatedInvitationForOthers
+                  : invitation;
+            }).toList(),
+          });
+        }
+      }
+    }
+  }
+
+  void _showUpdateSuccessSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Evento actualizado correctamente'),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 }

@@ -57,6 +57,7 @@ class _SearchEventScreenState extends State<SearchEventScreen> {
                   'tipoEvento': event['tipoEvento'],
                   'creadorNombre': creatorSnapshot['nombre'],
                   'creadorApellido': creatorSnapshot['apellido'],
+                  'subirFotosInvitados':event['subirFotosInvitados']
                 };
               });
               return;
@@ -102,6 +103,7 @@ class _SearchEventScreenState extends State<SearchEventScreen> {
     DocumentReference userReference = FirebaseFirestore.instance.collection('usuarios').doc(userId);
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Agregar evento',style: TextStyle(fontWeight: FontWeight.bold),),
         centerTitle: true,
       ),
@@ -186,7 +188,6 @@ class _SearchEventScreenState extends State<SearchEventScreen> {
                                       ),
                                     );
                                   } else {
-                                    // Agrega el evento como una invitación al usuario actual con el nuevo ID
                                     await userReference.update({
                                       'invitaciones': FieldValue.arrayUnion([
                                         {
@@ -195,6 +196,7 @@ class _SearchEventScreenState extends State<SearchEventScreen> {
                                           'tipoEvento': _foundEvent!['tipoEvento'],
                                           'creadorNombre': _foundEvent!['creadorNombre'],
                                           'creadorApellido': _foundEvent!['creadorApellido'],
+                                          'subirFotosInvitados':_foundEvent!['subirFotosInvitados']
                                         },
                                       ]),
                                     });

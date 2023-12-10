@@ -114,6 +114,7 @@ class _AppFinalState extends State<AppFinal> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         // Deja el AppBar vacío
       ),
       body: Center(

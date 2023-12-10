@@ -1,4 +1,6 @@
-import 'dart:io';
+
+import 'package:dam_proyectofinal/login.dart';
+import 'package:dam_proyectofinal/pantallaInvitaciones.dart';
 
 import 'pantallaAgregarEvento.dart';
 import 'pantallaCrearEvento.dart';
@@ -32,12 +34,23 @@ class _PantallaInicioState extends State<PantallaInicio> {
       _selectedIndex = index;
     });
   }
+  void _handleLogout() async {
+    await _auth.signOut();
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => AppFinal(),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Row(
           children: [
             RichText(
@@ -79,6 +92,24 @@ class _PantallaInicioState extends State<PantallaInicio> {
             ),
           ],
         ),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (String result) {
+              if (result == 'logout') {
+                _handleLogout();
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'logout',
+                child: ListTile(
+                  leading: Icon(Icons.exit_to_app),
+                  title: Text('Cerrar Sesión'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
 
       body: dinamico(),
@@ -127,11 +158,11 @@ class _PantallaInicioState extends State<PantallaInicio> {
     switch (_selectedIndex) {
       case 0:
         {
-          return MyEventsScreen();
+          return MyEventsScreen(nombreUsuario: widget.nombreUsuario,idUsuario: _user.uid,);
         } //case 0
       case 1:
         {
-          return const Center();
+          return InvitationsScreen();
         } //Termina caso 1
       case 2:
         {

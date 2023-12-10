@@ -36,14 +36,18 @@ class _pantallaRegistroState extends State<pantallaRegistro> {
           password: _passwordController.text,
         );
 
-        // Guardar información adicional en Firestore
+        // Crear un arreglo vacío de documentos llamado "invitaciones"
+        List<Map<String, dynamic>> invitaciones = [];
+
+        // Guardar información adicional en Firestore con invitaciones vacías
         await FirebaseFirestore.instance
             .collection('usuarios')
-            .doc(userCredential.user!.uid) //de esta manera toma el ID quese generó al crear el usuario con el correo de arriba
+            .doc(userCredential.user!.uid)
             .set({
           'nombre': _nombreController.text,
           'apellido': _apellidoController.text,
-          'correo': _correoController.text
+          'correo': _correoController.text,
+          'invitaciones': invitaciones, // Agregar el arreglo de invitaciones aquí
         });
 
         // Registro exitoso
