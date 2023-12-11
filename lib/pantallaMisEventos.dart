@@ -104,7 +104,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
       }
 
       // Elimina las fotos asociadas al evento de Firebase Storage
-      final storageRef = FirebaseStorage.instance.ref().child('photos/${_user.uid}/$eventId');
+      final storageRef = FirebaseStorage.instance.ref().child('event_photos/${_user.uid}/$eventId'); // Cambiar a la nueva ubicación
       await storageRef.listAll().then((result) {
         result.items.forEach((fileRef) async {
           await fileRef.delete();
@@ -113,16 +113,24 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
 
       // Elimina las fotos asociadas al evento de Firestore
       await _firestore
-          .collection('photos')
-          .doc(_user.uid)
-          .collection('user_photos')
+          .collection('event_photos')  // Cambiar a la nueva colección
           .doc(eventId)
-          .collection('event_photos')
+          .collection('photos')
           .get()
           .then((snapshot) {
         for (QueryDocumentSnapshot doc in snapshot.docs) {
           doc.reference.delete();
         }
+      });
+
+      // Elimina las invitaciones de los usuarios que tengan el ID de evento
+      await _firestore.collection('usuarios').get().then((userSnapshot) {
+        userSnapshot.docs.forEach((userDoc) async {
+          List<dynamic> invitaciones = List.from(userDoc['invitaciones']);
+          invitaciones.removeWhere((invitacion) => invitacion['id'] == eventId);
+
+          await _firestore.collection('usuarios').doc(userDoc.id).update({'invitaciones': invitaciones});
+        });
       });
 
       // Recarga la lista de eventos después de eliminar
@@ -131,6 +139,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
       print('Error al eliminar el evento: $e');
     }
   }
+
 
   Future<void> _loadAllEventPhotos() async {
     try {
@@ -142,11 +151,9 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
       // Carga las fotos de todos los eventos
       for (var event in userEvents) {
         QuerySnapshot photoSnapshot = await _firestore
-            .collection('photos')
-            .doc(_user.uid)
-            .collection('user_photos')
+            .collection('event_photos')  // Cambiar a la colección de fotos del evento
             .doc(event.id)
-            .collection('event_photos')
+            .collection('photos')
             .get();
 
         List<String> eventUrls = photoSnapshot.docs
@@ -159,7 +166,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
       setState(() {
         // Genera una lista de índices aleatorios
         List<int> randomIndices =
-            List<int>.generate(allUrls.length, (index) => index)..shuffle();
+        List<int>.generate(allUrls.length, (index) => index)..shuffle();
 
         // Usa los índices aleatorios para ordenar las fotos
         _photoUrls = randomIndices.map((index) => allUrls[index]).toList();
@@ -168,6 +175,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
       print('Error al cargar las fotos de todos los eventos: $e');
     }
   }
+
 
   Future<List<Evento>> _getUserEvents() async {
     try {
@@ -195,11 +203,9 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
   Future<String?> _loadEventFirstPhotoUrl(String eventId) async {
     try {
       QuerySnapshot photoSnapshot = await _firestore
-          .collection('photos')
-          .doc(_user.uid)
-          .collection('user_photos')
+          .collection('event_photos')  // Cambiar a la colección de fotos del evento
           .doc(eventId)
-          .collection('event_photos')
+          .collection('photos')
           .get();
 
       if (photoSnapshot.docs.isNotEmpty) {

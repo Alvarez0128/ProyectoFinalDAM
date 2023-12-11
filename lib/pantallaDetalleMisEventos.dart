@@ -41,15 +41,13 @@ class _MyEventsDetailState extends State<MyEventsDetail> {
     try {
       // Obtener URLs de fotos desde Firestore
       QuerySnapshot photoSnapshot = await _firestore
-          .collection('photos')
-          .doc(_user.uid)
-          .collection('user_photos')
+          .collection('event_photos')  // Cambiar a la colección de fotos del evento
           .doc(widget.idEvento)
-          .collection('event_photos')
+          .collection('photos')
           .get();
 
       List<String> urls =
-          photoSnapshot.docs.map((doc) => doc['photo_url'] as String).toList();
+      photoSnapshot.docs.map((doc) => doc['photo_url'] as String).toList();
 
       setState(() {
         _photos = urls;
@@ -58,6 +56,7 @@ class _MyEventsDetailState extends State<MyEventsDetail> {
       print('Error al cargar las fotos: $e');
     }
   }
+
 
   Future<void> _pickImage() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -72,49 +71,58 @@ class _MyEventsDetailState extends State<MyEventsDetail> {
   }
 
   Future<void> _uploadImage(File file) async {
-    // Subir imagen a Firebase Storage
-    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-    Reference storageReference = _storage
-        .ref()
-        .child('photos')
-        .child(_user.uid)
-        .child(widget.idEvento)
-        .child(fileName);
+    try {
+      // Subir imagen a Firebase Storage
+      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+      Reference storageReference = _storage
+          .ref()
+          .child('event_photos')  // Cambiar a la carpeta de fotos del evento
+          .child(widget.idEvento)
+          .child(fileName);
 
-    UploadTask uploadTask = storageReference.putFile(file);
+      UploadTask uploadTask = storageReference.putFile(file);
 
-    await uploadTask.whenComplete(() async {
-      // Obtener URL de la imagen y guardarla en Firestore
-      String imageUrl = await storageReference.getDownloadURL();
+      await uploadTask.whenComplete(() async {
+        // Obtener URL de la imagen y guardarla en Firestore
+        String imageUrl = await storageReference.getDownloadURL();
 
-      await _firestore
-          .collection('photos')
-          .doc(_user.uid)
-          .collection('user_photos')
-          .doc(widget.idEvento)
-          .collection('event_photos')
-          .add({'photo_url': imageUrl});
+        await _firestore
+            .collection('event_photos')  // Cambiar a la colección de fotos del evento
+            .doc(widget.idEvento)
+            .collection('photos')
+            .add({'photo_url': imageUrl});
 
-      // Actualizar la lista de fotos
-      await _loadPhotos();
-    });
+        // Actualizar la lista de fotos
+        await _loadPhotos();
+      });
+    } catch (e) {
+      print('Error al subir la imagen: $e');
+    }
   }
+
 
   Future<void> _deletePhoto(int index) async {
     try {
-      // Obtener el documento de la foto a eliminar
-      DocumentSnapshot photoSnapshot = await _firestore
-          .collection('photos')
-          .doc(_user.uid)
-          .collection('user_photos')
-          .doc(widget.idEvento)
-          .collection('event_photos')
-          .where('photo_url', isEqualTo: _photos[index])
-          .get()
-          .then((querySnapshot) => querySnapshot.docs.first);
+      String photoUrl = _photos[index];
+
+      // Obtener la referencia de la imagen en Firebase Storage
+      Reference storageReference = _storage.refFromURL(photoUrl);
+
+      // Eliminar la imagen de Firebase Storage
+      await storageReference.delete();
 
       // Eliminar la foto de Firestore
-      await photoSnapshot.reference.delete();
+      await _firestore
+          .collection('event_photos')  // Cambiar a la colección de fotos del evento
+          .doc(widget.idEvento)
+          .collection('photos')
+          .where('photo_url', isEqualTo: photoUrl)
+          .get()
+          .then((querySnapshot) {
+        querySnapshot.docs.forEach((doc) async {
+          await doc.reference.delete();
+        });
+      });
 
       // Actualizar la lista de fotos
       await _loadPhotos();
@@ -122,6 +130,7 @@ class _MyEventsDetailState extends State<MyEventsDetail> {
       print('Error al eliminar la foto: $e');
     }
   }
+
 
   Future<void> _navigateToUpdateEventScreen(Map<String, dynamic>? event) async {
     // Navegar a la pantalla de actualización del evento con los datos actuales
@@ -318,7 +327,7 @@ class _MyEventsDetailState extends State<MyEventsDetail> {
                       child: GridView.builder(
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
+                          crossAxisCount: 2,
                         ),
                         itemCount: _photos.length,
                         itemBuilder: (context, index) {

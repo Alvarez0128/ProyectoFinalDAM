@@ -1,9 +1,9 @@
-import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
+import 'dart:io';
 
 class InvitationDetailScreen extends StatefulWidget {
   final String eventId;
@@ -39,15 +39,13 @@ class _InvitationDetailScreenState extends State<InvitationDetailScreen> {
   Future<void> _loadPhotos() async {
     try {
       QuerySnapshot photoSnapshot = await _firestore
-          .collection('photos')
-          .doc(_user.uid)
-          .collection('user_photos')
-          .doc(widget.eventId)
           .collection('event_photos')
+          .doc(widget.eventId)
+          .collection('photos')
           .get();
 
       List<String> urls =
-      photoSnapshot.docs.map((doc) => doc['photo_url'] as String).toList();
+          photoSnapshot.docs.map((doc) => doc['photo_url'] as String).toList();
 
       setState(() {
         _photos = urls;
@@ -73,8 +71,7 @@ class _InvitationDetailScreenState extends State<InvitationDetailScreen> {
     String fileName = DateTime.now().millisecondsSinceEpoch.toString();
     Reference storageReference = _storage
         .ref()
-        .child('photos')
-        .child(_user.uid)
+        .child('event_photos')
         .child(widget.eventId)
         .child(fileName);
 
@@ -84,73 +81,13 @@ class _InvitationDetailScreenState extends State<InvitationDetailScreen> {
       String imageUrl = await storageReference.getDownloadURL();
 
       await _firestore
-          .collection('photos')
-          .doc(_user.uid)
-          .collection('user_photos')
-          .doc(widget.eventId)
           .collection('event_photos')
+          .doc(widget.eventId)
+          .collection('photos')
           .add({'photo_url': imageUrl});
 
       await _loadPhotos();
     });
-  }
-
-  Future<void> _confirmDeletePhoto(int index) async {
-    bool confirmDelete = await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Eliminar Foto'),
-          content: const Text('¿Estás seguro de que deseas eliminar esta foto?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: const Text('Eliminar'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmDelete == true) {
-      await _deletePhoto(index);
-    }
-  }
-
-  Future<void> _deletePhoto(int index) async {
-    try {
-      DocumentSnapshot photoSnapshot = await _firestore
-          .collection('photos')
-          .doc(_user.uid)
-          .collection('user_photos')
-          .doc(widget.eventId)
-          .collection('event_photos')
-          .where('photo_url', isEqualTo: _photos[index])
-          .get()
-          .then((querySnapshot) => querySnapshot.docs.first);
-
-      await photoSnapshot.reference.delete();
-      await _loadPhotos();
-    } catch (e) {
-      print('Error al eliminar la foto: $e');
-    }
-  }
-
-  Widget _buildEventTypeItem(String type) {
-    return ListTile(
-      title: Text(type),
-      onTap: () {
-        Navigator.pop(context, type);
-      },
-    );
   }
 
   @override
@@ -162,36 +99,49 @@ class _InvitationDetailScreenState extends State<InvitationDetailScreen> {
       body: Column(
         children: [
           Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-              ),
-              itemCount: _photos.length,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onLongPress: () {
-                    _confirmDeletePhoto(index);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(3.0),
-                    child: Image.network(
-                      _photos[index],
-                      fit: BoxFit.cover,
+            child: _photos.isEmpty
+                ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.photo,
+                          color: Colors.grey,
+                          size: 55,
+                        ),
+                        Text(
+                          'Sin fotos',
+                          style: TextStyle(fontSize: 18.0, color: Colors.grey),
+                        ),
+                      ],
                     ),
+                  )
+                : GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                    ),
+                    itemCount: _photos.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.all(3.0),
+                        child: Image.network(
+                          _photos[index],
+                          fit: BoxFit.cover,
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
       floatingActionButton: widget.allowGuestPhotos
           ? FloatingActionButton(
-        onPressed: () async {
-          await _pickImage();
-        },
-        child: const Icon(Icons.add),
-      )
+              onPressed: () async {
+                await _pickImage();
+              },
+              child: const Icon(Icons.add),
+            )
           : null,
     );
   }
