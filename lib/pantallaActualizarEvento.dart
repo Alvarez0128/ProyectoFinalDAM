@@ -116,7 +116,7 @@ class _UpdateEventScreenState extends State<UpdateEventScreen> {
         context,
         MaterialPageRoute(
             builder: (context) =>
-                MyEventsDetail(descripcion: widget.event?['descripcion'],idEvento: widget.event?['id'],usuario: _user.uid,)), // Reemplaza con la pantalla anterior
+                MyEventsDetail(descripcion: widget.event?['descripcion'],idEvento: widget.event?['id'],nombre: _user.uid,apellido: _user.uid,)), // Reemplaza con la pantalla anterior
       );
 
       return false; // Devolver false para evitar el pop normal del AppBar
@@ -241,7 +241,8 @@ class _UpdateEventScreenState extends State<UpdateEventScreen> {
                             builder: (context) => MyEventsDetail(
                               descripcion: _descriptionController.text,
                               idEvento: widget.event?['id'],
-                              usuario: _user.uid,
+                              nombre: _user.uid,
+                              apellido: _user.uid,
                             ),
                           ),
                         );

@@ -44,7 +44,7 @@ class _AppFinalState extends State<AppFinal> {
             .then((querySnapshot) => querySnapshot.docs.first);
 
         String nombre = userSnapshot['nombre'];
-        //String apellido = userSnapshot['apellido'];
+        String apellido = userSnapshot['apellido'];
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -64,7 +64,7 @@ class _AppFinalState extends State<AppFinal> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => PantallaInicio(nombreUsuario: '$nombre'),
+            builder: (context) => PantallaInicio(nombreUsuario: '$nombre',apellidoUsuario: '$apellido',),
           ),
         );
 

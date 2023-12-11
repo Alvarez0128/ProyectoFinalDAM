@@ -47,6 +47,7 @@ class _pantallaRegistroState extends State<pantallaRegistro> {
           'nombre': _nombreController.text,
           'apellido': _apellidoController.text,
           'correo': _correoController.text,
+          'photoURL':'',
           'invitaciones': invitaciones, // Agregar el arreglo de invitaciones aquí
         });
 

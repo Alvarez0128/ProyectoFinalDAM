@@ -13,9 +13,10 @@ import 'package:intl/intl.dart';
 class MyEventsDetail extends StatefulWidget {
   final String descripcion;
   final String idEvento;
-  final String usuario;
+  final String nombre;
+  final String apellido;
 
-  MyEventsDetail({required this.descripcion, required this.idEvento,required this.usuario});
+  MyEventsDetail({required this.descripcion, required this.idEvento,required this.nombre,required this.apellido});
 
   @override
   _MyEventsDetailState createState() => _MyEventsDetailState();
@@ -277,7 +278,7 @@ class _MyEventsDetailState extends State<MyEventsDetail> {
             context,
             MaterialPageRoute(
                 builder: (context) =>
-                    PantallaInicio(nombreUsuario: widget.usuario)), // Reemplaza con la pantalla anterior
+                    PantallaInicio(nombreUsuario: widget.nombre,apellidoUsuario: widget.apellido,)), // Reemplaza con la pantalla anterior
           );
 
           return false; // Devolver false para evitar el pop normal del AppBar

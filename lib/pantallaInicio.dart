@@ -1,5 +1,7 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dam_proyectofinal/login.dart';
+import 'package:dam_proyectofinal/pantallaEdicionUsuario.dart';
 import 'package:dam_proyectofinal/pantallaInvitaciones.dart';
 
 import 'pantallaAgregarEvento.dart';
@@ -10,8 +12,9 @@ import 'package:flutter/material.dart';
 
 class PantallaInicio extends StatefulWidget {
   final String nombreUsuario;
+  final String apellidoUsuario;
 
-  const PantallaInicio({Key? key, required this.nombreUsuario}) : super(key: key);
+  const PantallaInicio({Key? key, required this.nombreUsuario, required this.apellidoUsuario}) : super(key: key);
 
   @override
   State<PantallaInicio> createState() => _PantallaInicioState();
@@ -19,7 +22,7 @@ class PantallaInicio extends StatefulWidget {
 
 class _PantallaInicioState extends State<PantallaInicio> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
+  String _photoURL="";
   late User _user;
   int _selectedIndex = 0;
 
@@ -27,8 +30,25 @@ class _PantallaInicioState extends State<PantallaInicio> {
   void initState() {
     super.initState();
     _user = _auth.currentUser!;
+    _loadUserProfilePhoto();
   }
+  Future<void> _loadUserProfilePhoto() async {
+    try {
+      DocumentSnapshot userSnapshot = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(_user.uid)
+          .get();
 
+      // Obtener la URL de la foto del usuario
+      String photoURL = userSnapshot['photoURL'] ?? ''; // Puede ser nulo si no hay foto
+
+      setState(() {
+        _photoURL = photoURL;
+      });
+    } catch (e) {
+      print('Error al cargar la foto del usuario: $e');
+    }
+  }
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -44,6 +64,15 @@ class _PantallaInicioState extends State<PantallaInicio> {
     );
   }
 
+  void _openProfileUpdateScreen() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PantallaEdicionUsuario(userId: _user.uid),
+      ),
+    );
+    _loadUserProfilePhoto();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,20 +104,26 @@ class _PantallaInicioState extends State<PantallaInicio> {
               ),
             ),
             const Spacer(), // Espacio flexible para empujar el CircleAvatar hacia la derecha
-            const Padding(
+            Padding(
               padding: const EdgeInsets.only(right: 6.0),
-              child: CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.grey,
-                child: Padding(
-                  padding: const EdgeInsets.all(0.0), // Cambiar el tamaño del borde
-                  child: CircleAvatar(
-                    radius: 19,
-                    //backgroundColor: Colors.blueGrey,
-                    backgroundImage: AssetImage('assets/perfil.png'),
+              child: GestureDetector(
+                onTap: (){
+                  _openProfileUpdateScreen();
+                },
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.grey,
+                  child: Padding(
+                    padding: EdgeInsets.all(0.0), // Cambiar el tamaño del borde
+                    child: CircleAvatar(
+                      radius: 19,
+                      backgroundImage: _photoURL.isNotEmpty
+                          ? NetworkImage(_photoURL) as ImageProvider<Object>?
+                          : AssetImage('assets/perfil.png'),
+                    ),
                   ),
                 ),
-              ),
+              )
             ),
           ],
         ),
@@ -158,7 +193,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
     switch (_selectedIndex) {
       case 0:
         {
-          return MyEventsScreen(nombreUsuario: widget.nombreUsuario,idUsuario: _user.uid,);
+          return MyEventsScreen(nombreUsuario: widget.nombreUsuario,apellidoUsuario: widget.apellidoUsuario,idUsuario: _user.uid,);
         } //case 0
       case 1:
         {

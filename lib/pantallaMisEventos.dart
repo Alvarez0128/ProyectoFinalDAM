@@ -6,8 +6,9 @@ import 'package:flutter/material.dart';
 
 class MyEventsScreen extends StatefulWidget {
   final String nombreUsuario;
+  final String apellidoUsuario;
   final String idUsuario;
-  MyEventsScreen({required this.nombreUsuario,required this.idUsuario});
+  MyEventsScreen({required this.nombreUsuario,required this.apellidoUsuario,required this.idUsuario});
   @override
   _MyEventsScreenState createState() => _MyEventsScreenState();
 }
@@ -282,7 +283,8 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                               builder: (context) => MyEventsDetail(
                                 descripcion: snapshot.data![index].descripcion,
                                 idEvento: snapshot.data![index].id,
-                                usuario: widget.nombreUsuario,
+                                nombre: widget.nombreUsuario,
+                                apellido: widget.apellidoUsuario,
                               ),
                             ),
                           );
