@@ -173,7 +173,7 @@ class _PantallaEdicionUsuarioState extends State<PantallaEdicionUsuario> {
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,

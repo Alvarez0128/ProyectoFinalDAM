@@ -222,6 +222,12 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
     }
   }
 
+  String _truncateText(String text, int maxLength) {
+    if (text.length <= maxLength) {
+      return text;
+    }
+    return text.substring(0, maxLength) + "...";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -297,7 +303,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                           padding: const EdgeInsets.fromLTRB(3, 5, 3, 5),
                           child: Card(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(20),
                             ),
                             elevation: 4,
                             color: const Color.fromRGBO(162, 204, 242, 0.7),
@@ -305,7 +311,6 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                               width: 130,
                               padding: const EdgeInsets.all(8),
                               child: Column(
-                                //alignment: Alignment.bottomCenter,
                                 children: [
                                   const SizedBox(height: 20,),
                                   // CircleAvatar con foto del evento
@@ -317,29 +322,34 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                                       } else if (snapshotUrl.hasError || snapshotUrl.data == null) {
                                         // Manejar el caso de error o si no hay URL disponible
                                         return const CircleAvatar(
-                                          radius: 60,
-                                          child: Icon(Icons.no_photography_outlined,size: 55,color: Colors.white,),
+                                          radius: 50,
+                                          child: Icon(Icons.no_photography_outlined, size: 55, color: Colors.white,),
                                         );
                                       } else {
                                         // Mostrar la imagen del CircleAvatar si la URL está disponible
                                         return CircleAvatar(
-                                          radius: 60,
+                                          radius: 50,
                                           backgroundImage: NetworkImage(snapshotUrl.data!),
                                         );
                                       }
                                     },
                                   ),
+                                  const SizedBox(height: 10,),
                                   // Texto de descripción del evento
-                                  Text(
-                                    snapshot.data![index].descripcion,
-                                    style: const TextStyle(color: Colors.white),
-                                    textAlign: TextAlign.center,
+                                  Flexible(
+                                    child: Text(
+                                      _truncateText(snapshot.data![index].descripcion, 12), // Cambia 20 al número de caracteres deseados
+                                      style: const TextStyle(color: Colors.white),
+                                      textAlign: TextAlign.center,
+                                    ),
                                   ),
+
                                 ],
                               ),
                             ),
                           ),
                         ),
+
                       );
                     },
                   ),
