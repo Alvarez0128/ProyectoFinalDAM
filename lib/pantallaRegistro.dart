@@ -37,7 +37,7 @@ class _pantallaRegistroState extends State<pantallaRegistro> {
         );
 
         // Crear un arreglo vacío de documentos llamado "invitaciones"
-        List<Map<String, dynamic>> invitaciones = [];
+        List<Map<String, dynamic>> vacio = [];
 
         // Guardar información adicional en Firestore con invitaciones vacías
         await FirebaseFirestore.instance
@@ -48,7 +48,8 @@ class _pantallaRegistroState extends State<pantallaRegistro> {
           'apellido': _apellidoController.text,
           'correo': _correoController.text,
           'photoURL':'',
-          'invitaciones': invitaciones, // Agregar el arreglo de invitaciones aquí
+          'invitaciones': vacio,
+          'eventos': vacio,
         });
 
         // Registro exitoso

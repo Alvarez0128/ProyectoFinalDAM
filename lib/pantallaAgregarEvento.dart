@@ -15,6 +15,7 @@ class _SearchEventScreenState extends State<SearchEventScreen> {
   Map<String, dynamic>? _foundEvent;
 
   Future<void> _searchEventById(String eventId) async {
+
     try {
       // ID del usuario actual
       //String userId = FirebaseAuth.instance.currentUser!.uid;
@@ -30,6 +31,7 @@ class _SearchEventScreenState extends State<SearchEventScreen> {
           // Busca el evento en el arreglo de eventos del usuario actual
           for (var event in events) {
             if (event['id'] == eventId) {
+
               if (userSnapshot.id == userId) {
                 // El evento pertenece al usuario actual
                 ScaffoldMessenger.of(context).showSnackBar(
