@@ -17,29 +17,17 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -54,9 +42,48 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDKEYh9_slEi34ENhvn1bRTiWzOrnz68gA',
-    appId: '1:67043335009:android:d5a8db5ea6f52574e68320',
+    appId: '1:67043335009:android:72d0e6b1ed763e79e68320',
     messagingSenderId: '67043335009',
     projectId: 'proyectofinaldam-107d0',
     storageBucket: 'proyectofinaldam-107d0.appspot.com',
   );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCgGh_k1KhSCs5p35u5RuSB97t53VDSe7o',
+    appId: '1:67043335009:web:eaa5d73671b328f6e68320',
+    messagingSenderId: '67043335009',
+    projectId: 'proyectofinaldam-107d0',
+    authDomain: 'proyectofinaldam-107d0.firebaseapp.com',
+    storageBucket: 'proyectofinaldam-107d0.appspot.com',
+    measurementId: 'G-EQ76GGSTZQ',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyDOzxmg5DYryuvwqQXThpZ6FbuFXjZklxQ',
+    appId: '1:67043335009:ios:e4fb55a9f0abbc2de68320',
+    messagingSenderId: '67043335009',
+    projectId: 'proyectofinaldam-107d0',
+    storageBucket: 'proyectofinaldam-107d0.appspot.com',
+    iosBundleId: 'com.gps.finalproject',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyDOzxmg5DYryuvwqQXThpZ6FbuFXjZklxQ',
+    appId: '1:67043335009:ios:e4fb55a9f0abbc2de68320',
+    messagingSenderId: '67043335009',
+    projectId: 'proyectofinaldam-107d0',
+    storageBucket: 'proyectofinaldam-107d0.appspot.com',
+    iosBundleId: 'com.gps.finalproject',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyCgGh_k1KhSCs5p35u5RuSB97t53VDSe7o',
+    appId: '1:67043335009:web:997ef3822ebc012ae68320',
+    messagingSenderId: '67043335009',
+    projectId: 'proyectofinaldam-107d0',
+    authDomain: 'proyectofinaldam-107d0.firebaseapp.com',
+    storageBucket: 'proyectofinaldam-107d0.appspot.com',
+    measurementId: 'G-YJK2DCJKVG',
+  );
+
 }
