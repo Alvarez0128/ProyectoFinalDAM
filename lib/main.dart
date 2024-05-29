@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:dam_proyectofinal/login.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized(); //inicializar todos los servicios
@@ -9,6 +12,11 @@ void main() async{
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(const MyApp());
+  WidgetsBinding.instance.addPostFrameCallback((timeStamp) async{
+    if(Platform.isAndroid){
+      await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+    }
+  });
 }
 
 class MyApp extends StatelessWidget {

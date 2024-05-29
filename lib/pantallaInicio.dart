@@ -59,7 +59,7 @@ class _PantallaInicioState extends State<PantallaInicio> {
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => AppFinal(),
+        builder: (context) => const AppFinal(),
       ),
     );
   }
@@ -85,17 +85,17 @@ class _PantallaInicioState extends State<PantallaInicio> {
             RichText(
               text: const TextSpan(
                 style: TextStyle(
-                    fontSize: 21,
+                    fontSize: 26,
                     fontWeight: FontWeight.w400,
                     color: Colors.blue
                 ),
                 children: [
                   TextSpan(
-                    text: '   KCA ',
+                    text: 'Pix',
                     style: TextStyle(fontWeight: FontWeight.w600)
                   ),
                   TextSpan(
-                    text: "App",
+                    text: "Cove",
                     style: TextStyle(
                       color: Color.fromRGBO(66, 66, 66, 1),
                     ),
@@ -114,12 +114,12 @@ class _PantallaInicioState extends State<PantallaInicio> {
                   radius: 20,
                   backgroundColor: Colors.grey,
                   child: Padding(
-                    padding: EdgeInsets.all(0.0), // Cambiar el tamaño del borde
+                    padding: const EdgeInsets.all(0.0), // Cambiar el tamaño del borde
                     child: CircleAvatar(
                       radius: 19,
                       backgroundImage: _photoURL.isNotEmpty
                           ? NetworkImage(_photoURL) as ImageProvider<Object>?
-                          : AssetImage('assets/perfil.png'),
+                          : const AssetImage('assets/perfil.png'),
                     ),
                   ),
                 ),

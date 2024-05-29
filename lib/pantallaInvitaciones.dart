@@ -47,7 +47,7 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
         return null;
       }
     } catch (e) {
-      print('Error al cargar la primera foto del evento: $e');
+      //print('Error al cargar la primera foto del evento: $e');
       return null;
     }
   }

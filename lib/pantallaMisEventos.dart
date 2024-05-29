@@ -4,6 +4,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import 'PhotoViewerPage.dart';
+
 class MyEventsScreen extends StatefulWidget {
   final String nombreUsuario;
   final String apellidoUsuario;
@@ -390,13 +392,27 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                     ),
                     itemCount: _photoUrls.length,
                     itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.all(3.0),
-                        child: Image.network(
-                          _photoUrls[index],
-                          fit: BoxFit.cover,
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PhotoViewerPage(
+                                photos: _photoUrls,
+                                initialIndex: index,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(3.0),
+                          child: Image.network(
+                            _photoUrls[index],
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       );
+
                     },
                   ),
           ),

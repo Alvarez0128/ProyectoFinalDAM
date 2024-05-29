@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
+import 'PhotoViewerPage.dart';
+
 class MyEventsDetail extends StatefulWidget {
   final String descripcion;
   final String idEvento;
@@ -54,7 +56,7 @@ class _MyEventsDetailState extends State<MyEventsDetail> {
         _photos = urls;
       });
     } catch (e) {
-      print('Error al cargar las fotos: $e');
+      //print('Error al cargar las fotos: $e');
     }
   }
 
@@ -97,7 +99,7 @@ class _MyEventsDetailState extends State<MyEventsDetail> {
         await _loadPhotos();
       });
     } catch (e) {
-      print('Error al subir la imagen: $e');
+      //print('Error al subir la imagen: $e');
     }
   }
 
@@ -226,7 +228,7 @@ class _MyEventsDetailState extends State<MyEventsDetail> {
         }
       }
     } catch (e) {
-      print('Error al obtener la información del evento: $e');
+      //print('Error al obtener la información del evento: $e');
     }
   }
 
@@ -333,6 +335,17 @@ class _MyEventsDetailState extends State<MyEventsDetail> {
                         itemCount: _photos.length,
                         itemBuilder: (context, index) {
                           return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PhotoViewerPage(
+                                    photos: _photos,
+                                    initialIndex: index,
+                                  ),
+                                ),
+                              );
+                            },
                             onLongPress: () {
                               _confirmDeletePhoto(index);
                             },

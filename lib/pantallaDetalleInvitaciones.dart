@@ -5,6 +5,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
 
+import 'PhotoViewerPage.dart';
+
 class InvitationDetailScreen extends StatefulWidget {
   final String eventId;
   final String eventDescription;
@@ -51,7 +53,7 @@ class _InvitationDetailScreenState extends State<InvitationDetailScreen> {
         _photos = urls;
       });
     } catch (e) {
-      print('Error al cargar las fotos: $e');
+      //print('Error al cargar las fotos: $e');
     }
   }
 
@@ -117,21 +119,34 @@ class _InvitationDetailScreenState extends State<InvitationDetailScreen> {
                     ),
                   )
                 : GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                    ),
-                    itemCount: _photos.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.all(3.0),
-                        child: Image.network(
-                          _photos[index],
-                          fit: BoxFit.cover,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                  ),
+                  itemCount: _photos.length,
+                  itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PhotoViewerPage(
+                            photos: _photos,
+                            initialIndex: index,
+                          ),
                         ),
                       );
                     },
-                  ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(3.0),
+                      child: Image.network(
+                        _photos[index],
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                },
+                ),
+
           ),
         ],
       ),
